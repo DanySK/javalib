@@ -1,0 +1,123 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'findbugs'
+apply plugin: 'pmd'
+apply plugin: 'project-report'
+apply plugin: 'build-dashboard'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.7
+version = '0.0.0'
+group = 'org.danilopianini'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'javalibs', 'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'net.sf.trove4j:trove4j:3.0.+'
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+}
+
+test {
+    systemProperties 'property': 'value'
+}
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}
+
+configurations {
+    doclet
+}
+
+dependencies {
+    doclet group: 'org.jboss.apiviz', name: 'apiviz', version: '1.3.2.GA'
+}
+
+task aggregateJavadoc(type: Javadoc) {
+    group 'Documentation'
+    description 'Generates aggregated Javadoc API documentation for the main source code of all projects.'
+
+    doFirst {
+        subprojects.each { project ->
+            project.sourceSets.main.output.each { dir ->
+                dir.mkdirs()
+            }
+        }
+    }
+    source subprojects.collect { project ->
+        project.sourceSets.main.allJava
+    }
+    classpath = files(subprojects.collect { project ->
+        project.sourceSets.main.compileClasspath
+    })    
+    options.addStringOption('sourceclasspath', files(subprojects.collect { project ->
+        project.sourceSets.main.output
+    }).getAsPath())
+    destinationDir file("$project.buildDir/docs/javadoc/")
+    options.showAll()
+    options.addBooleanOption('nopackagediagram', true)
+    configure(options) {
+        windowTitle 'javalib'
+        docTitle 'javalib'
+        links 'http://docs.oracle.com/javase/8/docs/api/'
+        doclet 'org.jboss.apiviz.APIviz'
+        docletpath file(configurations.doclet.asPath)
+    }
+}    
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+tasks.withType(FindBugs) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+
+tasks.withType(Pmd) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+
+findbugs {
+	ignoreFailures = true
+	effort = "max"
+	reportLevel = "low"
+}
+
+pmd {
+	ignoreFailures = true
+	ruleSetFiles = files("pmd.xml")
+}
+
+defaultTasks 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc', 'buildDashboard'
+
+
