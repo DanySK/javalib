@@ -5,6 +5,7 @@ apply plugin: 'pmd'
 apply plugin: 'checkstyle'
 apply plugin: 'project-report'
 apply plugin: 'maven'
+apply plugin: 'build-dashboard'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -133,6 +134,28 @@ checkstyle {
 	configFile = new File("style.xml")
 }
 
-defaultTasks 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc'
+task writePom << {
+    pom {
+        project {
+            inceptionYear '2011'
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            developers {
+            	developer {
+            		name 'Danilo Pianini'
+            		email 'danilo.pianini@gmail.com'
+            		url 'http://www.danilopianini.org'
+            	}
+            }
+        }
+    }.writeTo("$buildDir/pom.xml")
+}
+
+defaultTasks 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc', 'writePom', 'buildDashboard'
 
 
