@@ -119,6 +119,12 @@ checkstyleMain << {
              out: new File(reports.xml.destination.parent, 'main.html'))
 }
 
+checkstyleTest << {
+    ant.xslt(in: reports.xml.destination,
+             style: new File("$project.projectDir/checkstyle-noframes-sorted.xsl"),
+             out: new File(reports.xml.destination.parent, 'main.html'))
+}
+
 findbugs {
 	ignoreFailures = true
 	effort = "max"
@@ -131,6 +137,7 @@ pmd {
 }
 
 checkstyle {
+	ignoreFailures = true
 	configFile = new File("style.xml")
 }
 
