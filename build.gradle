@@ -137,7 +137,9 @@ checkstyle {
 task writePom << {
     pom {
         project {
-            inceptionYear '2011'
+            name 'JavaLib'
+            description 'Handful shortcuts for Java programming'
+            url 'https://github.com/DanySK/javalib'
             licenses {
                 license {
                     name 'The Apache Software License, Version 2.0'
@@ -151,6 +153,11 @@ task writePom << {
             		email 'danilo.pianini@gmail.com'
             		url 'http://www.danilopianini.org'
             	}
+            }
+            scm {
+            	url 'https://github.com/DanySK/javalib'
+            	connection 'scm:git:git@github.com:DanySK/javalib.git'
+            	developerConnection 'scm:git:git@github.com:DanySK/javalib.git'
             }
         }
     }.writeTo("$buildDir/pom.xml")
