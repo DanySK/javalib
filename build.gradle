@@ -52,6 +52,13 @@ dependencies {
     doclet group: 'org.jboss.apiviz', name: 'apiviz', version: '1.3.2.GA'
 }
 
+eclipse {
+	classpath {
+    	downloadJavadoc = true
+		downloadSources = true
+	}
+}
+
 task aggregateJavadoc(type: Javadoc) {
     group 'Documentation'
     description 'Generates aggregated Javadoc API documentation for the main source code of all projects.'
