@@ -7,8 +7,13 @@ apply plugin: 'project-report'
 apply plugin: 'maven'
 
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 version = '0.0.0'
 group = 'org.danilopianini'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.1'
+}
 
 jar {
     manifest {
