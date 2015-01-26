@@ -4,7 +4,6 @@ apply plugin: 'findbugs'
 apply plugin: 'pmd'
 apply plugin: 'checkstyle'
 apply plugin: 'project-report'
-apply plugin: 'build-dashboard'
 apply plugin: 'maven'
 
 sourceCompatibility = 1.8
@@ -108,6 +107,12 @@ tasks.withType(Pmd) {
 	}
 }
 
+checkstyleMain << {
+    ant.xslt(in: reports.xml.destination,
+             style: new File("$project.projectDir/checkstyle-noframes-sorted.xsl"),
+             out: new File(reports.xml.destination.parent, 'main.html'))
+}
+
 findbugs {
 	ignoreFailures = true
 	effort = "max"
@@ -120,9 +125,9 @@ pmd {
 }
 
 checkstyle {
-	config = project.resources.text.fromFile("style.xml")
+	configFile = new File("style.xml")
 }
 
-defaultTasks 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc', 'buildDashboard'
+defaultTasks 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc'
 
 
