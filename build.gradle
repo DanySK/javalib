@@ -7,18 +7,15 @@ apply plugin: 'project-report'
 apply plugin: 'maven'
 apply plugin: 'build-dashboard'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-version = '0.0.0'
-group = 'org.danilopianini'
-
 task wrapper(type: Wrapper) {
     gradleVersion = '2.1'
 }
 
+// General configuration
+
 jar {
     manifest {
-        attributes 'Implementation-Title': 'javalibs', 'Implementation-Version': version
+        attributes 'Implementation-Title': artifactId, 'Implementation-Version': version
     }
 }
 
@@ -26,31 +23,35 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    compile 'net.sf.trove4j:trove4j:3.0.+'
-    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
-    testCompile group: 'junit', name: 'junit', version: '4.+'
-}
-
-test {
-    systemProperties 'property': 'value'
-}
-
-uploadArchives {
-    repositories {
-       flatDir {
-           dirs 'repos'
-       }
-    }
-}
-
 configurations {
     doclet
 }
 
 dependencies {
-    doclet group: 'org.jboss.apiviz', name: 'apiviz', version: '1.3.2.GA'
+    compile 'net.sf.trove4j:trove4j:3.0.+'
+    compile 'commons-collections:commons-collections:3.2'
+    doclet 'org.jboss.apiviz:apiviz:1.3.2.GA'
+    testCompile 'junit:junit:4.+'
 }
+
+// Artifacts configuration
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+// Eclipse configuration
 
 eclipse {
 	classpath {
@@ -58,6 +59,57 @@ eclipse {
 		downloadSources = true
 	}
 }
+
+// FindBugs configuration
+
+findbugs {
+	ignoreFailures = true
+	effort = "max"
+	reportLevel = "low"
+}
+
+tasks.withType(FindBugs) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+
+// PMD configuration
+
+pmd {
+	ignoreFailures = true
+	ruleSetFiles = files("pmd.xml")
+	targetJdk = pmdTargetJdk
+}
+
+tasks.withType(Pmd) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+
+// Checkstyle configuration
+
+checkstyle {
+	ignoreFailures = true
+	configFile = new File("style.xml")
+}
+
+checkstyleMain << {
+    ant.xslt(in: reports.xml.destination,
+             style: new File("$project.projectDir/checkstyle-noframes-sorted.xsl"),
+             out: new File(reports.xml.destination.parent, 'main.html'))
+}
+
+checkstyleTest << {
+    ant.xslt(in: reports.xml.destination,
+             style: new File("$project.projectDir/checkstyle-noframes-sorted.xsl"),
+             out: new File(reports.xml.destination.parent, 'main.html'))
+}
+
+// Javadoc Configuration
 
 task aggregateJavadoc(type: Javadoc) {
     group 'Documentation'
@@ -89,76 +141,20 @@ task aggregateJavadoc(type: Javadoc) {
         doclet 'org.jboss.apiviz.APIviz'
         docletpath file(configurations.doclet.asPath)
     }
-}    
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-}
-
-tasks.withType(FindBugs) {
-	reports {
-		xml.enabled = false
-		html.enabled = true
-	}
-}
-
-tasks.withType(Pmd) {
-	reports {
-		xml.enabled = false
-		html.enabled = true
-	}
-}
-
-checkstyleMain << {
-    ant.xslt(in: reports.xml.destination,
-             style: new File("$project.projectDir/checkstyle-noframes-sorted.xsl"),
-             out: new File(reports.xml.destination.parent, 'main.html'))
-}
-
-checkstyleTest << {
-    ant.xslt(in: reports.xml.destination,
-             style: new File("$project.projectDir/checkstyle-noframes-sorted.xsl"),
-             out: new File(reports.xml.destination.parent, 'main.html'))
-}
-
-findbugs {
-	ignoreFailures = true
-	effort = "max"
-	reportLevel = "low"
-}
-
-pmd {
-	ignoreFailures = true
-	ruleSetFiles = files("pmd.xml")
-}
-
-checkstyle {
-	ignoreFailures = true
-	configFile = new File("style.xml")
-}
+// POM configuration
 
 task writePom << {
     pom {
         project {
-            name 'JavaLib'
-            description 'Handful shortcuts for Java programming'
-            url 'https://github.com/DanySK/javalib'
+            name artifactId
+            description projectDescription
+            url "$scmRootUrl/$artifactId"
             licenses {
                 license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
+                    name licenseName
+                    url licenseUrl
                 }
             }
             developers {
@@ -169,9 +165,9 @@ task writePom << {
             	}
             }
             scm {
-            	url 'https://github.com/DanySK/javalib'
-            	connection 'scm:git:git@github.com:DanySK/javalib.git'
-            	developerConnection 'scm:git:git@github.com:DanySK/javalib.git'
+            	url "$scmRootUrl/$artifactId"
+            	connection "%scmType:$scmLogin/$scmRepoName"
+            	developerConnection "%scmType:$scmLogin/$scmRepoName"
             }
         }
     }.writeTo("$buildDir/pom.xml")
