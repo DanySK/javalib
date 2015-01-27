@@ -164,34 +164,32 @@ uploadArchives {
       		snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
         		authentication(userName: ossrhUsername, password: ossrhPassword)
       		}
+		    pom.project {
+	            name artifactId
+	            description projectDescription
+	            packaging 'jar'
+	            url "$scmRootUrl/$artifactId"
+	            licenses {
+	                license {
+	                    name licenseName
+	                    url licenseUrl
+	                }
+	            }
+	            developers {
+	            	developer {
+	            		name 'Danilo Pianini'
+	            		email 'danilo.pianini@gmail.com'
+	            		url 'http://www.danilopianini.org'
+	            	}
+	            }
+	            scm {
+	            	url "$scmRootUrl/$artifactId"
+	            	connection "%scmType:$scmLogin/$scmRepoName"
+	            	developerConnection "%scmType:$scmLogin/$scmRepoName"
+	            }
+		    }
     	}
   	}
-    pom {
-        project {
-            name artifactId
-            description projectDescription
-            packaging 'jar'
-            url "$scmRootUrl/$artifactId"
-            licenses {
-                license {
-                    name licenseName
-                    url licenseUrl
-                }
-            }
-            developers {
-            	developer {
-            		name 'Danilo Pianini'
-            		email 'danilo.pianini@gmail.com'
-            		url 'http://www.danilopianini.org'
-            	}
-            }
-            scm {
-            	url "$scmRootUrl/$artifactId"
-            	connection "%scmType:$scmLogin/$scmRepoName"
-            	developerConnection "%scmType:$scmLogin/$scmRepoName"
-            }
-        }
-    }
 }
 
 defaultTasks 'wrapper', 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc', 'buildDashboard'
