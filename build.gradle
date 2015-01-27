@@ -38,8 +38,6 @@ dependencies {
     
     doclet 'org.jboss.apiviz:apiviz:1.3.2.GA'
     
-//    doc 'net.sf.trove4j:trove4j:3.0.3:sources'
-
     pmd(
         "net.sourceforge.pmd:pmd-core:$pmdVersion",
         "net.sourceforge.pmd:pmd-vm:$pmdVersion",
