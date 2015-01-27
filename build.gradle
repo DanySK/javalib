@@ -48,6 +48,29 @@ dependencies {
     )
 }
 
+
+// Javadoc Configuration
+
+task aggregateJavadoc(type: Javadoc) {
+	source configurations.doc.collect { zipTree(it) }
+    source sourceSets.main.allJava
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+    include '**/*.java'
+    destinationDir file("$project.buildDir/docs/javadoc/")
+    failOnError = false
+    options.showAll()
+    options.addBooleanOption('nopackagediagram', true)
+	options.addStringOption('Xdoclint:none', '-quiet')
+    configure(options) {
+        windowTitle "$projectLongName version $project.version Javadoc API"
+        docTitle "$projectLongName $project.version reference API"
+        links 'http://docs.oracle.com/javase/8/docs/api/'
+        links 'http://trove4j.sourceforge.net/javadocs/'
+        doclet 'org.jboss.apiviz.APIviz'
+        docletpath file(configurations.doclet.asPath)
+    }
+}
+
 // Artifacts configuration
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -55,7 +78,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+task javadocJar(type: Jar, dependsOn: aggregateJavadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
