@@ -9,7 +9,7 @@ apply plugin: 'build-dashboard'
 apply plugin: 'signing'
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.1'
+    gradleVersion = gradleVersionToUse
 }
 
 // General configuration
@@ -189,6 +189,6 @@ task writePom << {
     }.writeTo("$buildDir/pom.xml")
 }
 
-defaultTasks 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc', 'writePom', 'buildDashboard'
+defaultTasks 'wrapper', 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc', 'writePom', 'buildDashboard'
 
 
