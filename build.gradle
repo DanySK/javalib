@@ -155,22 +155,17 @@ task aggregateJavadoc(type: Javadoc) {
 signArchives.onlyIf { Boolean.parseBoolean(signArchivesIsEnabled) }
 
 uploadArchives {
-  repositories {
-    mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
-    }
-  }
-}
-
-// POM configuration
-
-task writePom << {
+	repositories {
+    	mavenDeployer {
+      		beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+      		repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        		authentication(userName: ossrhUsername, password: ossrhPassword)
+      		}
+      		snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        		authentication(userName: ossrhUsername, password: ossrhPassword)
+      		}
+    	}
+  	}
     pom {
         project {
             name artifactId
@@ -196,9 +191,9 @@ task writePom << {
             	developerConnection "%scmType:$scmLogin/$scmRepoName"
             }
         }
-    }.writeTo("$buildDir/pom.xml")
+    }
 }
 
-defaultTasks 'wrapper', 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc', 'writePom', 'buildDashboard'
+defaultTasks 'wrapper', 'clean', 'build', 'check', 'assemble', 'install', 'aggregateJavadoc', 'buildDashboard'
 
 
