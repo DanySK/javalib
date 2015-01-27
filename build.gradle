@@ -6,6 +6,7 @@ apply plugin: 'checkstyle'
 apply plugin: 'project-report'
 apply plugin: 'maven'
 apply plugin: 'build-dashboard'
+apply plugin: 'signing'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.1'
@@ -55,6 +56,10 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
+}
+
+signing {
+    sign configurations.archives
 }
 
 // Eclipse configuration
@@ -135,6 +140,24 @@ task aggregateJavadoc(type: Javadoc) {
     }
 }
 
+// Upload configuration
+
+signArchives.onlyIf { Boolean.parseBoolean(signArchivesIsEnabled) }
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+    }
+  }
+}
+
 // POM configuration
 
 task writePom << {
@@ -142,6 +165,7 @@ task writePom << {
         project {
             name artifactId
             description projectDescription
+            packaging 'jar'
             url "$scmRootUrl/$artifactId"
             licenses {
                 license {
