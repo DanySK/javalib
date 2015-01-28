@@ -65,7 +65,7 @@
         </rule>
         <rule>
             <name>CollapsibleIfStatements</name>
-            <ruleset>Basic</ruleset>
+            <ruleset>Basic Velocity</ruleset>
         </rule>
         <rule>
             <name>DontCallThreadRun</name>
@@ -106,38 +106,6 @@
         <rule>
             <name>UnconditionalIfStatement</name>
             <ruleset>Basic</ruleset>
-        </rule>
-        <rule>
-            <name>AvoidTrailingComma</name>
-            <ruleset>Basic Ecmascript</ruleset>
-        </rule>
-        <rule>
-            <name>ConsistentReturn</name>
-            <ruleset>Basic Ecmascript</ruleset>
-        </rule>
-        <rule>
-            <name>EqualComparison</name>
-            <ruleset>Basic Ecmascript</ruleset>
-        </rule>
-        <rule>
-            <name>GlobalVariable</name>
-            <ruleset>Basic Ecmascript</ruleset>
-        </rule>
-        <rule>
-            <name>InnaccurateNumericLiteral</name>
-            <ruleset>Basic Ecmascript</ruleset>
-        </rule>
-        <rule>
-            <name>ScopeForInVariable</name>
-            <ruleset>Basic Ecmascript</ruleset>
-        </rule>
-        <rule>
-            <name>UnreachableCode</name>
-            <ruleset>Basic Ecmascript</ruleset>
-        </rule>
-        <rule>
-            <name>UseBaseWithParseInt</name>
-            <ruleset>Basic Ecmascript</ruleset>
         </rule>
         <rule>
             <name>DontNestJsfInJstlIteration</name>
@@ -224,10 +192,6 @@
             <ruleset>Braces</ruleset>
         </rule>
         <rule>
-            <name>CyclomaticComplexity</name>
-            <ruleset>Code Size</ruleset>
-        </rule>
-        <rule>
             <name>ExcessivePublicCount</name>
             <ruleset>Code Size</ruleset>
         </rule>
@@ -249,10 +213,6 @@
         </rule>
         <rule>
             <name>NcssTypeCount</name>
-            <ruleset>Code Size</ruleset>
-        </rule>
-        <rule>
-            <name>NPathComplexity</name>
             <ruleset>Code Size</ruleset>
         </rule>
         <rule>
@@ -328,10 +288,6 @@
             <ruleset>Coupling</ruleset>
         </rule>
         <rule>
-            <name>LoosePackageCoupling</name>
-            <ruleset>Coupling</ruleset>
-        </rule>
-        <rule>
             <name>AbstractClassWithoutAbstractMethod</name>
             <ruleset>Design</ruleset>
         </rule>
@@ -365,7 +321,7 @@
         </rule>
         <rule>
             <name>AvoidReassigningParameters</name>
-            <ruleset>Design</ruleset>
+            <ruleset>Basic Velocity</ruleset>
         </rule>
         <rule>
             <name>BadComparison</name>
@@ -960,10 +916,6 @@
             <ruleset>Tom Kyte's Despair</ruleset>
         </rule>
         <rule>
-            <name>UnnecessaryBlock</name>
-            <ruleset>Unnecessary</ruleset>
-        </rule>
-        <rule>
             <name>UnnecessaryConversionTemporary</name>
             <ruleset>Unnecessary</ruleset>
         </rule>
@@ -1006,10 +958,6 @@
         <rule>
             <name>UnusedPrivateMethod</name>
             <ruleset>Unused Code</ruleset>
-        </rule>
-        <rule>
-            <name>AvoidAxisNavigation</name>
-            <ruleset>XPath in XSL</ruleset>
         </rule>
         <rule>
             <name>UseConcatOnce</name>
