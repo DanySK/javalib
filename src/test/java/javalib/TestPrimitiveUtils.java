@@ -40,12 +40,12 @@ public class TestPrimitiveUtils {
 	 */
 	@Test
 	public void testCastIfNeeded() {
-		assertEquals(1, castIfNeeded(Integer.class, 1.0d));
-		assertNotEquals(1.0, castIfNeeded(Integer.class, 1.0d));
-		assertEquals((byte) 1, castIfNeeded(Byte.class, 1.0d));
-		assertEquals(1.0, castIfNeeded(Double.class, 1));
-		assertEquals(1L, castIfNeeded(Long.class, 1));
-		assertNotEquals(1L, castIfNeeded(Integer.class, 1L));
+		assertEquals(1, castIfNeeded(Integer.class, 1.0d).get());
+		assertNotEquals(1.0, castIfNeeded(Integer.class, 1.0d).get());
+		assertEquals((byte) 1, castIfNeeded(Byte.class, 1.0d).get());
+		assertEquals(1.0, castIfNeeded(Double.class, 1).get());
+		assertEquals(1L, castIfNeeded(Long.class, 1).get());
+		assertNotEquals(1L, castIfNeeded(Integer.class, 1L).get());
 	}
 
 }
