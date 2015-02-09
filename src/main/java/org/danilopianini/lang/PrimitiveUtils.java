@@ -38,16 +38,16 @@ public final class PrimitiveUtils {
 	 * @param arg the argument that may need to be cast
 	 * @return a possibly cast version of the argument
 	 */
-	public static Number castIfNeeded(final Class<?> dest, final Number arg) {
+	public static Optional<Number> castIfNeeded(final Class<?> dest, final Number arg) {
 		Objects.requireNonNull(dest);
 		Objects.requireNonNull(arg);
 		final Optional<Pair<Class<?>[], Function<Number, ? extends Number>>> fconv = NUMBER_CASTER.stream()
 				.filter(pair -> Arrays.stream(pair.getFirst()).anyMatch(dest::equals))
 				.findFirst();
 		if (fconv.isPresent()) {
-			return fconv.get().getSecond().apply(arg);
+			return Optional.of(fconv.get().getSecond().apply(arg));
 		}
-		throw new IllegalArgumentException(arg + " can not be cast to " + dest);
+		return Optional.empty();
 	}
 
 	private PrimitiveUtils() {
