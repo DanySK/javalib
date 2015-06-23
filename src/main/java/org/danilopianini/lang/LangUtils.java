@@ -28,7 +28,7 @@ public final class LangUtils {
 	 * @param objs the objects
 	 */
 	public static void requireNonNull(final Object... objs) {
-		for (Object o: objs) {
+		for (final Object o: objs) {
 			Objects.requireNonNull(o);
 		}
 	}
