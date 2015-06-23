@@ -1,32 +1,49 @@
 package org.danilopianini.lang;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import com.google.common.collect.Lists;
+
 /**
  * @author Danilo Pianini
  *
  */
+@SuppressWarnings("unchecked")
 public final class PrimitiveUtils {
 	
-	private static final Map<Class<?>, Function<Number, ? extends Number>> NUMBER_CASTER  = new LinkedHashMap<>();
+	private static final Map<Class<?>, Function<Number, ? extends Number>> NUMBER_CASTER;
+	private static final List<Class<? extends Number>> WRAPPER_LIST;
+	private static final List<Class<? extends Number>> PRIMITIVE_LIST;
 	
 	static {
-		NUMBER_CASTER.put(Byte.class, Number::byteValue);
-		NUMBER_CASTER.put(Byte.TYPE, Number::byteValue);
-		NUMBER_CASTER.put(Short.class, Number::shortValue);
-		NUMBER_CASTER.put(Short.TYPE, Number::shortValue);
-		NUMBER_CASTER.put(Integer.class, Number::intValue);
-		NUMBER_CASTER.put(Integer.TYPE, Number::intValue);
-		NUMBER_CASTER.put(Long.class, Number::longValue);
-		NUMBER_CASTER.put(Long.TYPE, Number::longValue);
-		NUMBER_CASTER.put(Float.class, Number::floatValue);
-		NUMBER_CASTER.put(Float.TYPE, Number::floatValue);
-		NUMBER_CASTER.put(Double.class, Number::doubleValue);
-		NUMBER_CASTER.put(Double.TYPE, Number::doubleValue);
+		WRAPPER_LIST = Collections.unmodifiableList(Lists.newArrayList(
+				Byte.class,
+				Short.class,
+				Integer.class,
+				Long.class,
+				Float.class,
+				Double.class));
+		PRIMITIVE_LIST = Collections.unmodifiableList(Lists.newArrayList(
+				byte.class,
+				short.class, //NOPMD
+				int.class,
+				long.class,
+				float.class,
+				double.class));
+		final LinkedHashMap<Class<?>, Function<Number, ? extends Number>> map = new LinkedHashMap<>();
+		map.put(Byte.class, Number::byteValue);
+		map.put(Short.class, Number::shortValue);
+		map.put(Integer.class, Number::intValue);
+		map.put(Long.class, Number::longValue);
+		map.put(Float.class, Number::floatValue);
+		map.put(Double.class, Number::doubleValue);
+		NUMBER_CASTER = Collections.unmodifiableMap(map);
 	}
 
 	/**
@@ -34,10 +51,7 @@ public final class PrimitiveUtils {
 	 * @return true if the class is a subclass is a number having primitive representation in Java
 	 */
 	public static boolean classIsNumber(final Class<?> clazz) {
-		if (Number.class.isAssignableFrom(clazz)) {
-			return true;
-		}
-		return NUMBER_CASTER.containsKey(clazz);
+		return Number.class.isAssignableFrom(clazz) || PRIMITIVE_LIST.contains(clazz);
 	}
 	
 	/**
@@ -56,6 +70,22 @@ public final class PrimitiveUtils {
 			return Optional.of(cast.apply(arg));
 		}
 		return Optional.empty();
+	}
+	
+	/**
+	 * Given a {@link Number}, tries to guess at which wrapper-class it may
+	 * belong.
+	 * 
+	 * @param n
+	 *            the {@link Number}
+	 * @return The wrapper-class this {@link Number} actually belongs to, or
+	 *         Double.class if it is no wrapper
+	 */
+	public static Class<? extends Number> toPrimitiveWrapper(final Number n) {
+		return WRAPPER_LIST.stream()
+			.filter(c -> c.isInstance(n))
+			.findFirst()
+			.orElse(Double.class);
 	}
 
 	private PrimitiveUtils() {
