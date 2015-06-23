@@ -31,18 +31,24 @@ public final class PrimitiveUtils {
 				Double.class));
 		PRIMITIVE_LIST = Collections.unmodifiableList(Lists.newArrayList(
 				byte.class,
-				short.class, //NOPMD
+				short.class,
 				int.class,
 				long.class,
 				float.class,
 				double.class));
 		final LinkedHashMap<Class<?>, Function<Number, ? extends Number>> map = new LinkedHashMap<>();
 		map.put(Byte.class, Number::byteValue);
+		map.put(Byte.TYPE, Number::byteValue);
 		map.put(Short.class, Number::shortValue);
+		map.put(Short.TYPE, Number::shortValue);
 		map.put(Integer.class, Number::intValue);
+		map.put(Integer.TYPE, Number::intValue);
 		map.put(Long.class, Number::longValue);
+		map.put(Long.TYPE, Number::longValue);
 		map.put(Float.class, Number::floatValue);
+		map.put(Float.TYPE, Number::floatValue);
 		map.put(Double.class, Number::doubleValue);
+		map.put(Double.TYPE, Number::doubleValue);
 		NUMBER_CASTER = Collections.unmodifiableMap(map);
 	}
 
