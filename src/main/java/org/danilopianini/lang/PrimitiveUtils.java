@@ -31,7 +31,7 @@ public final class PrimitiveUtils {
 				Double.class));
 		PRIMITIVE_LIST = Collections.unmodifiableList(Lists.newArrayList(
 				byte.class,
-				short.class,
+				short.class, //NOPMD
 				int.class,
 				long.class,
 				float.class,
