@@ -169,6 +169,10 @@ public final class HashUtils {
 				for (int i = 0; i < size; i++) {
 					populateHasher(Array.get(data, i), h);
 				}
+			} else if (data instanceof Iterable) {
+				for (final Object o: (Iterable<?>) data) {
+					populateHasher(o, h);
+				}
 			} else if (data instanceof Serializable) {
 				h.putBytes(FileUtilities.serializeObject((Serializable) data));
 			} else {
