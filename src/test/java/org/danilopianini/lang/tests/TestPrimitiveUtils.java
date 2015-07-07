@@ -1,4 +1,4 @@
-package javalib;
+package org.danilopianini.lang.tests;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -8,6 +8,8 @@ import org.junit.Test;
 import static org.danilopianini.lang.PrimitiveUtils.classIsNumber;
 import static org.danilopianini.lang.PrimitiveUtils.castIfNeeded;
 import static org.danilopianini.lang.PrimitiveUtils.toPrimitiveWrapper;
+import static org.danilopianini.lang.PrimitiveUtils.classIsWrapper;
+import static org.danilopianini.lang.PrimitiveUtils.classIsPrimitive;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
@@ -79,5 +81,55 @@ public class TestPrimitiveUtils {
 		assertEquals(Double.class, toPrimitiveWrapper(0d));
 		assertEquals(Double.class, toPrimitiveWrapper(BigDecimal.ZERO));
 	}
+
+	/**
+	 * 
+	 */
+	@Test
+	public void testIsWrapper() {
+		assertTrue(classIsWrapper(Integer.class));
+		assertTrue(classIsWrapper(Byte.class));
+		assertTrue(classIsWrapper(Short.class));
+		assertTrue(classIsWrapper(Double.class));
+		assertTrue(classIsWrapper(Long.class));
+		assertTrue(classIsWrapper(Float.class));
+		assertTrue(classIsWrapper(Character.class));
+		assertTrue(classIsWrapper(Void.class));
+		assertTrue(classIsWrapper(Boolean.class));
+		assertFalse(classIsWrapper(BigInteger.class));
+		assertFalse(classIsWrapper(Integer.TYPE));
+		assertFalse(classIsWrapper(Byte.TYPE));
+		assertFalse(classIsWrapper(Short.TYPE));
+		assertFalse(classIsWrapper(Double.TYPE));
+		assertFalse(classIsWrapper(Long.TYPE));
+		assertFalse(classIsWrapper(Float.TYPE));
+	}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void testIsPrimitive() {
+		assertTrue(classIsPrimitive(int.class));
+		assertTrue(classIsPrimitive(byte.class));
+		assertTrue(classIsPrimitive(short.class)); // NOPMD
+		assertTrue(classIsPrimitive(double.class));
+		assertTrue(classIsPrimitive(long.class));
+		assertTrue(classIsPrimitive(float.class));
+		assertTrue(classIsPrimitive(char.class));
+		assertTrue(classIsPrimitive(void.class));
+		assertTrue(classIsPrimitive(boolean.class));
+		assertFalse(classIsPrimitive(BigInteger.class));
+		assertFalse(classIsPrimitive(Integer.class));
+		assertFalse(classIsPrimitive(Byte.class));
+		assertFalse(classIsPrimitive(Short.class));
+		assertFalse(classIsPrimitive(Double.class));
+		assertFalse(classIsPrimitive(Long.class));
+		assertFalse(classIsPrimitive(Float.class));
+		assertFalse(classIsPrimitive(Character.class));
+		assertFalse(classIsPrimitive(Void.class));
+		assertFalse(classIsPrimitive(Boolean.class));
+	}
+	
 
 }

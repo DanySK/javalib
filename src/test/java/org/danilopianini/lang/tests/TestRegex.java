@@ -1,4 +1,4 @@
-package javalib;
+package org.danilopianini.lang.tests;
 
 import static org.danilopianini.lang.RegexUtil.FLOAT_PATTERN;
 

@@ -18,24 +18,36 @@ import com.google.common.collect.Lists;
 public final class PrimitiveUtils {
 	
 	private static final Map<Class<?>, Function<Number, ? extends Number>> NUMBER_CASTER;
-	private static final List<Class<? extends Number>> WRAPPER_LIST;
-	private static final List<Class<? extends Number>> PRIMITIVE_LIST;
+	private static final List<Class<? extends Number>> WRAPPER_NUMBER_LIST;
+	private static final List<Class<?>> PRIMITIVE_NUMBER_LIST;
+	private static final List<Class<?>> PRIMITIVE_LIST;
+	private static final List<Class<?>> WRAPPER_LIST;
 	
 	static {
-		WRAPPER_LIST = Collections.unmodifiableList(Lists.newArrayList(
+		WRAPPER_NUMBER_LIST = Collections.unmodifiableList(Lists.newArrayList(
 				Byte.class,
 				Short.class,
 				Integer.class,
 				Long.class,
 				Float.class,
 				Double.class));
-		PRIMITIVE_LIST = Collections.unmodifiableList(Lists.newArrayList(
+		PRIMITIVE_NUMBER_LIST = Collections.unmodifiableList(Lists.newArrayList(
 				byte.class,
 				short.class, //NOPMD
 				int.class,
 				long.class,
 				float.class,
 				double.class));
+		final List<Class<?>> primitives = Lists.newArrayList(PRIMITIVE_NUMBER_LIST);
+		primitives.add(boolean.class);
+		primitives.add(char.class);
+		primitives.add(void.class);
+		PRIMITIVE_LIST = Collections.unmodifiableList(primitives);
+		final List<Class<?>> wrappers = Lists.newArrayList(WRAPPER_NUMBER_LIST);
+		wrappers.add(Boolean.class);
+		wrappers.add(Character.class);
+		wrappers.add(Void.class);
+		WRAPPER_LIST = Collections.unmodifiableList(wrappers);
 		final LinkedHashMap<Class<?>, Function<Number, ? extends Number>> map = new LinkedHashMap<>();
 		map.put(Byte.class, Number::byteValue);
 		map.put(Byte.TYPE, Number::byteValue);
@@ -53,11 +65,31 @@ public final class PrimitiveUtils {
 	}
 
 	/**
-	 * @param clazz the class under test
-	 * @return true if the class is a subclass is a number having primitive representation in Java
+	 * @param clazz
+	 *            the class under test
+	 * @return true if the class is a primitive wrapper
+	 */
+	public static boolean classIsWrapper(final Class<?> clazz) {
+		return WRAPPER_LIST.contains(clazz);
+	}
+	
+	/**
+	 * @param clazz
+	 *            the class under test
+	 * @return true if the class is a primitive wrapper
+	 */
+	public static boolean classIsPrimitive(final Class<?> clazz) {
+		return PRIMITIVE_LIST.contains(clazz);
+	}
+	
+	/**
+	 * @param clazz
+	 *            the class under test
+	 * @return true if the class is a subclass of {@link Number} or it is a
+	 *         number having primitive representation in Java
 	 */
 	public static boolean classIsNumber(final Class<?> clazz) {
-		return Number.class.isAssignableFrom(clazz) || PRIMITIVE_LIST.contains(clazz);
+		return Number.class.isAssignableFrom(clazz) || PRIMITIVE_NUMBER_LIST.contains(clazz);
 	}
 	
 	/**
@@ -88,7 +120,7 @@ public final class PrimitiveUtils {
 	 *         Double.class if it is no wrapper
 	 */
 	public static Class<? extends Number> toPrimitiveWrapper(final Number n) {
-		return WRAPPER_LIST.stream()
+		return WRAPPER_NUMBER_LIST.stream()
 			.filter(c -> c.isInstance(n))
 			.findFirst()
 			.orElse(Double.class);
