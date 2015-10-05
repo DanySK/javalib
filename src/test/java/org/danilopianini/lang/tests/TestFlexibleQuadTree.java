@@ -16,7 +16,7 @@ import org.junit.Test;
  * @author Danilo Pianini
  *
  */
-public class TestQuadTree {
+public class TestFlexibleQuadTree {
 	
 	private static final int INSERTIONS = 10000;
 	private static final int SUB_INS = INSERTIONS / 4;
