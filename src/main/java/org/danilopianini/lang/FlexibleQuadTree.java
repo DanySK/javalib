@@ -23,75 +23,33 @@ import com.google.common.base.Optional;
  * 
  * @param <E>
  */
-public final class FlexibleQuadTree<E> implements Serializable {
+public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 
 	private static final long serialVersionUID = -8765593946059102012L;
-
 	/**
 	 * Default maximum number of entries per node.
 	 */
 	public static final int DEFAULT_CAPACITY = 10;
+
 	private final Rectangle2D bounds;
 	private final Deque<QuadTreeEntry<E>> elements;
 	private final int maxElements;
+	
 	private final List<Optional<FlexibleQuadTree<E>>> children = new ArrayList<>(Collections.nCopies(4, Optional.absent()));
+	
 	/**
 	 * root is NOT consistent everywhere. It is only guaranteed to be consistent
 	 * in the entry point node and in the current root.
 	 */
 	private FlexibleQuadTree<E> root;
+	
 	private FlexibleQuadTree<E> parent;
+	
 	private boolean childrenCreated;
 	
-	private static class Rectangle2D implements Serializable {
-		
-		private static final long serialVersionUID = -7890062202005580979L;
-		private final double minx, miny, maxx, maxy;
-		
-		public Rectangle2D(final double sx, final double sy, final double fx, final double fy) {
-			minx = Math.min(sx, fx);
-			miny = Math.min(sy, fy);
-			maxx = Math.max(sx, fx);
-			maxy = Math.max(sy, fy);
-		}
-
-		public boolean contains(final double x, final double y) {
-			return x >= minx && y >= miny && x < maxx && y < maxy;
-		}
-
-		public boolean intersects(final double sx, final double sy, final double fx, final double fy) {
-			return fx >= minx && fy >= miny && sx < maxx && sy < maxy;
-		}
-
-		public double getCenterX() {
-			return minx + (maxx - minx) / 2;
-		}
-
-		public double getCenterY() {
-			return miny + (maxy - miny) / 2;
-		}
-
-		public double getMinY() {
-			return miny;
-		}
-
-		public double getMaxX() {
-			return maxx;
-		}
-
-		public double getMaxY() {
-			return maxy;
-		}
-
-		public double getMinX() {
-			return minx;
-		}
-		
-		@Override
-		public String toString() {
-			return "[" + minx + "," + miny + " - " + maxx + "," + maxy + "]";
-		}
-
+	
+	private enum Child {
+		TR, BR, BL, TL;
 	}
 
 	private static class QuadTreeEntry<E> implements Serializable {
@@ -122,6 +80,10 @@ public final class FlexibleQuadTree<E> implements Serializable {
 			return HashUtils.hash32(x, y, element);
 		}
 		
+		public boolean isIn(final double sx, final double sy, final double fx, final double fy) {
+			return x >= sx && x < fx && y >= sy && y < fy;
+		}
+		
 		public boolean samePosition(final QuadTreeEntry<?> target) {
 			return x == target.x && y == target.y;
 		}
@@ -129,14 +91,78 @@ public final class FlexibleQuadTree<E> implements Serializable {
 		public String toString() {
 			return element.toString() + "@[" + x + ", " + y + "]";
 		}
+	}
+	
+	private static class Rectangle2D implements Serializable {
+		private static final long serialVersionUID = -7890062202005580979L;
+		private final double minx, miny, maxx, maxy;
 		
-		public boolean isIn(final double sx, final double sy, final double fx, final double fy) {
-			return x >= sx && x < fx && y >= sy && y < fy;
+		public Rectangle2D(final double sx, final double sy, final double fx, final double fy) {
+			minx = Math.min(sx, fx);
+			miny = Math.min(sy, fy);
+			maxx = Math.max(sx, fx);
+			maxy = Math.max(sy, fy);
+		}
+
+		public boolean contains(final double x, final double y) {
+			return x >= minx && y >= miny && x < maxx && y < maxy;
+		}
+
+		public double getCenterX() {
+			return minx + (maxx - minx) / 2;
+		}
+
+		public double getCenterY() {
+			return miny + (maxy - miny) / 2;
+		}
+
+		public double getMaxX() {
+			return maxx;
+		}
+
+		public double getMaxY() {
+			return maxy;
+		}
+
+		public double getMinX() {
+			return minx;
+		}
+
+		public double getMinY() {
+			return miny;
+		}
+
+		public boolean intersects(final double sx, final double sy, final double fx, final double fy) {
+			return fx >= minx && fy >= miny && sx < maxx && sy < maxy;
+		}
+		
+		@Override
+		public String toString() {
+			return "[" + minx + "," + miny + " - " + maxx + "," + maxy + "]";
 		}
 	}
 	
-	private enum Child {
-		TR, BR, BL, TL;
+	private static <E> boolean moveFromNode(final FlexibleQuadTree<E> root, final E e, final double sx, final double sy, final double fx, final double fy) {
+		for (FlexibleQuadTree<E> cur = root; cur.contains(sx, sy); cur = cur.selectChild(sx, sy)) {
+			if (cur.elements.remove(new QuadTreeEntry<E>(e, sx, sy))) {
+				/*
+				 * Node found.
+				 */
+				if (cur.contains(fx, fy)) {
+					/*
+					 * Moved within the same quadrant.
+					 */
+					cur.insertNode(e, fx, fy);
+				} else if (cur.parent == null || !cur.swapMostStatic(e, fx, fy)) {
+					root.insertHere(e, fx, fy);
+				}
+				return true;
+			}
+			if (!cur.hasChildren()) {
+				return false;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -160,137 +186,15 @@ public final class FlexibleQuadTree<E> implements Serializable {
 		parent = parentNode;
 		root = rootNode == null ? this : rootNode;
 	}
+
+
 	
-	private double minX(final Child c) {
-		switch (c) {
-		case TR:
-		case BR:
-			return centerX();
-		case BL:
-		case TL:
-			return minX();
-		default:
-			throw new IllegalStateException();
-		}
-	}
-	
-	private double maxX(final Child c) {
-		switch (c) {
-		case TR:
-		case BR:
-			return maxX();
-		case BL:
-		case TL:
-			return centerX();
-		default:
-			throw new IllegalStateException();
-		}
-	}
-
-	private double minY(final Child c) {
-		switch (c) {
-		case BL:
-		case BR:
-			return minY();
-		case TR:
-		case TL:
-			return centerY();
-		default:
-			throw new IllegalStateException();
-		}
-	}
-
-	private double maxY(final Child c) {
-		switch (c) {
-		case BL:
-		case BR:
-			return centerY();
-		case TR:
-		case TL:
-			return maxY();
-		default:
-			throw new IllegalStateException();
-		}
-	}
-
-	private FlexibleQuadTree<E> getChild(final Child c) {
-		return children.get(c.ordinal()).get();
-	}
-	
-	private void setChild(final Child c, final FlexibleQuadTree<E> child) {
-		if (children.set(c.ordinal(), Optional.of(child)).isPresent()) {
-			throw new IllegalStateException();
-		}
-		child.parent = this;
-	}
-
-	private void createChildIfAbsent(final Child c) {
-		if (!children.get(c.ordinal()).isPresent()) {
-			setChild(c, create(minX(c), maxX(c), minY(c), maxY(c), this));
-		}
-	}
-
-	private void subdivide() {
-		for (final Child c: Child.values()) {
-			createChildIfAbsent(c);
-		}
-	}
-
 	/**
 	 * @param elemPerQuad
 	 *            maximum number of elements per quad
 	 */
 	public FlexibleQuadTree(final int elemPerQuad) {
-		this(0, 1, 0, 1, elemPerQuad, null, null);
-	}
-	
-	private boolean contains(final double x, final double y) {
-		return bounds.contains(x, y);
-	}
-	
-	private FlexibleQuadTree<E> create(final double minx,
-			final double maxx,
-			final double miny,
-			final double maxy,
-			final FlexibleQuadTree<E> parent) {
-		return new FlexibleQuadTree<E>(minx, maxx, miny, maxy, getMaxElementsNumber(), root, parent);
-	}
-
-	/**
-	 * Deletes an element from the QuadTree.
-	 * 
-	 * @param e
-	 *            The element to delete
-	 * @param x
-	 *            the x position of the element
-	 * @param y
-	 *            the y position of the element
-	 * @return true if the element is found and removed
-	 */
-	public boolean remove(final E e, final double x, final double y) {
-		return root.localRemove(e, x, y);
-	}
-	
-	private boolean localRemove(final E e, final double x, final double y) {
-		if (contains(x, y)) {
-			return removeHere(e, x, y) || removeInChildren(e, x, y);
-		}
-		return false;
-	}
-	
-	private boolean removeInChildren(final E e, final double x, final double y) {
-		return children.parallelStream()
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.filter(c -> c.localRemove(e, x, y))
-				.findAny().isPresent();
-	}
-	
-	/**
-	 * @return the maximum number of elements per node
-	 */
-	public int getMaxElementsNumber() {
-		return maxElements;
+		this(-1, 1, -1, 1, elemPerQuad, null, null);
 	}
 	
 	private double centerX() {
@@ -301,69 +205,24 @@ public final class FlexibleQuadTree<E> implements Serializable {
 		return bounds.getCenterY();
 	}
 
-	private double minY() {
-		return bounds.getMinY();
+	private boolean contains(final double x, final double y) {
+		return bounds.contains(x, y);
 	}
 
-	private double maxY() {
-		return bounds.getMaxY();
-	}
-
-	private double minX() {
-		return bounds.getMinX();
-	}
-
-	private double maxX() {
-		return bounds.getMaxX();
-	}
-
-	private boolean hasChildren() {
-		if (!childrenCreated) {
-			childrenCreated = children.stream().allMatch(Optional::isPresent);
-		}
-		return childrenCreated;
-	}
-
-	private boolean hasSpace() {
-		return elements.size() < maxElements;
-	}
-
-	/**
-	 * Inserts an element in the {@link FlexibleQuadTree}. If the element is
-	 * outside the space managed by this quadtree, a new quadtree root will be
-	 * created and returned. If not enough space is available in this node, new
-	 * children will get created. Remember to ALWAYS operate on the returned
-	 * object.
-	 * 
-	 * @param e
-	 *            The element to add
-	 * @param x
-	 *            the x position of the element
-	 * @param y
-	 *            the y position of the element
-	 */
-	public void insert(final E e, final double x, final double y) {
-		/*
-		 * I must insert starting from the root. If the root does not contain
-		 * the coordinates, then the tree should be expanded upwards
-		 */
-		for (; !root.contains(x, y); root = root.root) {
-			root.createParent(x, y);
-		}
-		root.localInsert(e, x, y);
+	private FlexibleQuadTree<E> create(final double minx,
+			final double maxx,
+			final double miny,
+			final double maxy,
+			final FlexibleQuadTree<E> father) {
+		return new FlexibleQuadTree<E>(minx, maxx, miny, maxy, getMaxElementsNumber(), root, father);
 	}
 	
-	private void localInsert(final E e, final double x, final double y) {
-		if (hasSpace()) {
-			insertHere(e, x, y);
-		} else {
-			if (!hasChildren()) {
-				subdivide();
-			}
-			insertInChild(e, x, y);
+	private void createChildIfAbsent(final Child c) {
+		if (!children.get(c.ordinal()).isPresent()) {
+			setChild(c, create(minX(c), maxX(c), minY(c), maxY(c), this));
 		}
 	}
-	
+
 	private void createParent(final double x, final double y) {
 		/*
 		 * Determine where the parent should be
@@ -406,18 +265,142 @@ public final class FlexibleQuadTree<E> implements Serializable {
 		root.root = root;
 		root.subdivide();
 	}
+
+	private FlexibleQuadTree<E> getChild(final Child c) {
+		return children.get(c.ordinal()).get();
+	}
+
+	@Override
+	public int getDimensions() {
+		return 2;
+	}
+	
+	/**
+	 * @return the maximum number of elements per node
+	 */
+	public int getMaxElementsNumber() {
+		return maxElements;
+	}
+
+	private boolean hasChildren() {
+		if (!childrenCreated) {
+			childrenCreated = children.stream().allMatch(Optional::isPresent);
+		}
+		return childrenCreated;
+	}
+	
+	private boolean hasSpace() {
+		return elements.size() < maxElements;
+	}
+	
+	@Override
+	public void insert(final E e, final double... pos) {
+		assert pos.length == 2;
+		final double x = pos[0];
+		final double y = pos[1];
+		/*
+		 * I must insert starting from the root. If the root does not contain
+		 * the coordinates, then the tree should be expanded upwards
+		 */
+		for (; !root.contains(x, y); root = root.root) {
+			root.createParent(x, y);
+		}
+		root.insertHere(e, x, y);
+	}
 	
 	private void insertHere(final E e, final double x, final double y) {
+		if (hasSpace()) {
+			insertNode(e, x, y);
+		} else {
+			if (!hasChildren()) {
+				subdivide();
+			}
+			selectChild(x, y).insertHere(e, x, y);
+		}
+	}
+	
+	private void insertNode(final E e, final double x, final double y) {
 		assert elements.size() < maxElements : "Bug in " + getClass() + ". Forced insertion over the container size.";
 		elements.push(new QuadTreeEntry<>(e, x, y));
 	}
 
-	private void insertInChild(final E e, final double x, final double y) {
-		selectChild(x, y).localInsert(e, x, y);
+	private double maxX() {
+		return bounds.getMaxX();
 	}
 
+	private double maxX(final Child c) {
+		switch (c) {
+		case TR:
+		case BR:
+			return maxX();
+		case BL:
+		case TL:
+			return centerX();
+		default:
+			throw new IllegalStateException();
+		}
+	}
+
+	private double maxY() {
+		return bounds.getMaxY();
+	}
+
+	private double maxY(final Child c) {
+		switch (c) {
+		case BL:
+		case BR:
+			return centerY();
+		case TR:
+		case TL:
+			return maxY();
+		default:
+			throw new IllegalStateException();
+		}
+	}
+
+	private double minX() {
+		return bounds.getMinX();
+	}
+
+	private double minX(final Child c) {
+		switch (c) {
+		case TR:
+		case BR:
+			return centerX();
+		case BL:
+		case TL:
+			return minX();
+		default:
+			throw new IllegalStateException();
+		}
+	}
+
+	private double minY() {
+		return bounds.getMinY();
+	}
+	
+	private double minY(final Child c) {
+		switch (c) {
+		case BL:
+		case BR:
+			return minY();
+		case TR:
+		case TL:
+			return centerY();
+		default:
+			throw new IllegalStateException();
+		}
+	}
+
+	@Override
+	public boolean move(final E e, final double[] start, final double[] end) {
+		assert start.length == 2;
+		assert end.length == 2;
+		return move(e, start[0], start[1], end[0], end[1]);
+	}
+	
 	/**
-	 * If an element is moved, updates the QuadTree accordingly.
+	 * Same of {@link #move(Object, double[], double[])}, but with explicit parameters.
 	 * 
 	 * @param e
 	 *            the element
@@ -432,74 +415,18 @@ public final class FlexibleQuadTree<E> implements Serializable {
 	 * @return true if the element is found and no error occurred
 	 */
 	public boolean move(final E e, final double sx, final double sy, final double fx, final double fy) {
-		return staticMove(root, e, sx, sy, fx, fy);
+		return moveFromNode(root, e, sx, sy, fx, fy);
 	}
 	
-	public static <E> boolean staticMove(final FlexibleQuadTree<E> root, final E e, final double sx, final double sy, final double fx, final double fy) {
-		for (FlexibleQuadTree<E> cur = root; cur.contains(sx, sy); cur = cur.selectChild(sx, sy)) {
-			if (cur.elements.remove(new QuadTreeEntry<E>(e, sx, sy))) {
-				/*
-				 * Node found.
-				 */
-				if (cur.contains(fx, fy)) {
-					/*
-					 * Moved within the same quadrant.
-					 */
-					cur.insertHere(e, fx, fy);
-				} else if (cur.parent == null || !cur.swapMostStatic(e, fx, fy)) {
-					root.localInsert(e, fx, fy);
-				}
-				return true;
-			}
-			if (!cur.hasChildren()) {
-				return false;
-			}
-		}
-		return false;
-	}
-	
-	private FlexibleQuadTree<E> selectChild(final double x, final double y) {
-		assert hasChildren();
-		if (x < centerX()) {
-			if (y < centerY()) {
-				return getChild(Child.BL);
-			}
-			return getChild(Child.TL);
-		} else {
-			if (y < centerY()) {
-				return getChild(Child.BR);
-			}
-			return getChild(Child.TR);
-		}
-	}
-	
-	private boolean swapMostStatic(final E e, final double fx, final double fy) {
-		assert parent != null : "Tried to swap on a null parent.";
-		final Iterator<QuadTreeEntry<E>> iterator = parent.elements.descendingIterator();
-		while (iterator.hasNext()) {
-			final QuadTreeEntry<E> target = iterator.next();
-			if (contains(target.x, target.y)) {
-				/*
-				 * There is a swappable node
-				 */
-				elements.push(target);
-				parent.insertHere(e, fx, fy);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * @param fromx start x
-	 * @param fromy start y
-	 * @param tox end x
-	 * @param toy end y
-	 * @return a list of objects in range
-	 */
-	public List<E> query(final double fromx, final double fromy, final double tox, final double toy) {
+	@Override
+	public List<E> query(final double... space) {
+		assert space.length == 4;
 		final List<E> result = new ArrayList<>();
-		root.query(fromx, fromy, tox, toy, Collections.synchronizedList(result));
+		final double sx = Math.min(space[0], space[2]);
+		final double sy = Math.min(space[1], space[3]);
+		final double fx = Math.max(space[0], space[2]);
+		final double fy = Math.max(space[1], space[3]);
+		root.query(sx, sy, fx, fy, Collections.synchronizedList(result));
 		return result;
 	}
 	
@@ -517,13 +444,76 @@ public final class FlexibleQuadTree<E> implements Serializable {
 			}
 		}
 	}
-
-	private boolean removeHere(final E e, final double x, final double y) {
-		return elements.remove(new QuadTreeEntry<E>(e, x, y));
+	
+	@Override
+	public boolean remove(final E e, final double... pos) {
+		assert pos.length == 2;
+		return root.removeHere(e, pos[0], pos[1]);
 	}
 
+	private boolean removeHere(final E e, final double x, final double y) {
+		if (contains(x, y)) {
+			return elements.remove(new QuadTreeEntry<E>(e, x, y)) || removeInChildren(e, x, y);
+		}
+		return false;
+	}
+	
+	private boolean removeInChildren(final E e, final double x, final double y) {
+		return children.parallelStream()
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.filter(c -> c.removeHere(e, x, y))
+				.findAny().isPresent();
+	}
+
+	private FlexibleQuadTree<E> selectChild(final double x, final double y) {
+		assert hasChildren();
+		if (x < centerX()) {
+			if (y < centerY()) {
+				return getChild(Child.BL);
+			}
+			return getChild(Child.TL);
+		} else {
+			if (y < centerY()) {
+				return getChild(Child.BR);
+			}
+			return getChild(Child.TR);
+		}
+	}
+
+	private void setChild(final Child c, final FlexibleQuadTree<E> child) {
+		if (children.set(c.ordinal(), Optional.of(child)).isPresent()) {
+			throw new IllegalStateException();
+		}
+		child.parent = this;
+	}
+	
+	private void subdivide() {
+		for (final Child c: Child.values()) {
+			createChildIfAbsent(c);
+		}
+	}
+
+	private boolean swapMostStatic(final E e, final double fx, final double fy) {
+		assert parent != null : "Tried to swap on a null parent.";
+		final Iterator<QuadTreeEntry<E>> iterator = parent.elements.descendingIterator();
+		while (iterator.hasNext()) {
+			final QuadTreeEntry<E> target = iterator.next();
+			if (contains(target.x, target.y)) {
+				/*
+				 * There is a swappable node
+				 */
+				elements.push(target);
+				parent.insertNode(e, fx, fy);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public String toString() {
 		return bounds.toString() + ' ' + elements.toString();
 	}
+	
 }

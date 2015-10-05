@@ -39,6 +39,7 @@ public class TestQuadTree {
 		});
 		assertEquals(INSERTIONS, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
 		testCase.stream().forEach(o -> assertTrue(qt.remove(o, o[0], o[1])));
+		assertEquals(0, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
 		testCase.stream().forEach(o -> assertFalse(qt.remove(o, o[0], o[1])));
 	}
 
@@ -55,7 +56,11 @@ public class TestQuadTree {
 			qt.insert(v, val, -val);
 			qt.insert(v, -val, -val);
 		});
-//		assertEquals(0, 0, Double.MAX_VALUE, Double.MAX_VALUE).size(), SUB_INS / 4);
+		assertEquals(4 * SUB_INS, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
+		assertEquals(SUB_INS + 3, qt.query(0, 0, Double.MAX_VALUE, Double.MAX_VALUE).size());
+		assertEquals(SUB_INS - 1, qt.query(0, 0, -Double.MAX_VALUE, Double.MAX_VALUE).size());
+		assertEquals(SUB_INS - 1, qt.query(0, 0, Double.MAX_VALUE, -Double.MAX_VALUE).size());
+		assertEquals(SUB_INS - 1, qt.query(0, 0, -Double.MAX_VALUE, -Double.MAX_VALUE).size());
 //		assertEquals(qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size(), INSERTIONS);
 //		assertEquals(qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size(), INSERTIONS);
 //		assertEquals(qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size(), INSERTIONS);
@@ -66,6 +71,7 @@ public class TestQuadTree {
 			assertTrue(qt.move(v, val, -val, val / 2, -val / 2));
 			assertTrue(qt.move(v, -val, -val, -val / 2, -val / 2));
 		});
+		assertEquals(4 * SUB_INS, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
 		IntStream.range(0, SUB_INS).forEach(v -> {
 			final double val = v / (double) SUB_INS / 2;
 			assertTrue(qt.remove(v, val, val));
@@ -73,6 +79,7 @@ public class TestQuadTree {
 			assertTrue(qt.remove(v, val, -val));
 			assertTrue(qt.remove(v, -val, -val));
 		});
+		assertEquals(0, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
 		IntStream.range(0, SUB_INS).forEach(v -> {
 			final double val = v / (double) SUB_INS / 2;
 			assertFalse(qt.remove(v, val, val));
@@ -80,6 +87,7 @@ public class TestQuadTree {
 			assertFalse(qt.remove(v, val, -val));
 			assertFalse(qt.remove(v, -val, -val));
 		});
+		assertEquals(0, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
 	}
 
 }
