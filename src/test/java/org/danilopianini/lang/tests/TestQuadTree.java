@@ -1,6 +1,8 @@
 package org.danilopianini.lang.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.Random;
@@ -8,16 +10,20 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.danilopianini.lang.FlexibleQuadTree;
-import org.danilopianini.lang.QuadTree;
 import org.junit.Test;
 
-import com.google.common.primitives.Ints;
-
+/**
+ * @author Danilo Pianini
+ *
+ */
 public class TestQuadTree {
 	
-	private static final int INSERTIONS = 10;
-	private static final int SUB_INS = 800;
+	private static final int INSERTIONS = 10000;
+	private static final int SUB_INS = INSERTIONS / 4;
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testRandom() {
 		final Random rnd = new Random(0);
@@ -31,9 +37,14 @@ public class TestQuadTree {
 		testCase.stream().forEach(o -> {
 			qt.insert(o, o[0], o[1]);
 		});
+		assertEquals(INSERTIONS, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
 		testCase.stream().forEach(o -> assertTrue(qt.remove(o, o[0], o[1])));
+		testCase.stream().forEach(o -> assertFalse(qt.remove(o, o[0], o[1])));
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testSubdivide() {
 		final FlexibleQuadTree<Object> qt = new FlexibleQuadTree<>();
@@ -44,9 +55,13 @@ public class TestQuadTree {
 			qt.insert(v, val, -val);
 			qt.insert(v, -val, -val);
 		});
+//		assertEquals(0, 0, Double.MAX_VALUE, Double.MAX_VALUE).size(), SUB_INS / 4);
+//		assertEquals(qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size(), INSERTIONS);
+//		assertEquals(qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size(), INSERTIONS);
+//		assertEquals(qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size(), INSERTIONS);
 		IntStream.range(0, SUB_INS).forEach(v -> {
 			final double val = v / (double) SUB_INS;
-			assertTrue(qt.move(v, val, val, val / 2, val / 2));
+			assertTrue("Test failed for " + v + ".", qt.move(v, val, val, val / 2, val / 2));
 			assertTrue(qt.move(v, -val, val, -val / 2, val / 2));
 			assertTrue(qt.move(v, val, -val, val / 2, -val / 2));
 			assertTrue(qt.move(v, -val, -val, -val / 2, -val / 2));
@@ -57,6 +72,13 @@ public class TestQuadTree {
 			assertTrue(qt.remove(v, -val, val));
 			assertTrue(qt.remove(v, val, -val));
 			assertTrue(qt.remove(v, -val, -val));
+		});
+		IntStream.range(0, SUB_INS).forEach(v -> {
+			final double val = v / (double) SUB_INS / 2;
+			assertFalse(qt.remove(v, val, val));
+			assertFalse(qt.remove(v, -val, val));
+			assertFalse(qt.remove(v, val, -val));
+			assertFalse(qt.remove(v, -val, -val));
 		});
 	}
 

@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.google.common.base.Optional;
-import com.sun.org.apache.xml.internal.dtm.ref.DTMDefaultBaseIterators.ChildrenIterator;
 
 /**
  * 
@@ -65,11 +64,11 @@ public final class FlexibleQuadTree<E> implements Serializable {
 		}
 
 		public double getCenterX() {
-			return (maxx - minx) / 2;
+			return minx + (maxx - minx) / 2;
 		}
 
 		public double getCenterY() {
-			return (maxy - miny) / 2;
+			return miny + (maxy - miny) / 2;
 		}
 
 		public double getMinY() {
@@ -140,6 +139,9 @@ public final class FlexibleQuadTree<E> implements Serializable {
 		TR, BR, BL, TL;
 	}
 	
+	/**
+	 * Builds a {@link FlexibleQuadTree} with the default node capacity.
+	 */
 	public FlexibleQuadTree() {
 		this(DEFAULT_CAPACITY);
 	}
@@ -411,19 +413,7 @@ public final class FlexibleQuadTree<E> implements Serializable {
 	}
 
 	private void insertInChild(final E e, final double x, final double y) {
-		if (x < centerX()) {
-			if (y < centerY()) {
-				getChild(Child.BL).localInsert(e, x, y);
-			} else {
-				getChild(Child.TL).localInsert(e, x, y);
-			}
-		} else {
-			if (y < centerY()) {
-				getChild(Child.BR).localInsert(e, x, y);
-			} else {
-				getChild(Child.TL).localInsert(e, x, y);
-			}
-		}
+		selectChild(x, y).localInsert(e, x, y);
 	}
 
 	/**
@@ -442,56 +432,45 @@ public final class FlexibleQuadTree<E> implements Serializable {
 	 * @return true if the element is found and no error occurred
 	 */
 	public boolean move(final E e, final double sx, final double sy, final double fx, final double fy) {
-		return root.localMove(e, sx, sy, fx, fy);
+		return staticMove(root, e, sx, sy, fx, fy);
 	}
 	
-	private boolean localMove(final E e, final double sx, final double sy, final double fx, final double fy) {
-		if (contains(sx, sy)) {
-			if (elements.remove(new QuadTreeEntry<E>(e, sx, sy))) {
-				if (contains(fx, fy)) {
-					insertHere(e, fx, fy);
-				} else if (parent == null || !swapMostStatic(e, fx, fy)) {
+	public static <E> boolean staticMove(final FlexibleQuadTree<E> root, final E e, final double sx, final double sy, final double fx, final double fy) {
+		for (FlexibleQuadTree<E> cur = root; cur.contains(sx, sy); cur = cur.selectChild(sx, sy)) {
+			if (cur.elements.remove(new QuadTreeEntry<E>(e, sx, sy))) {
+				/*
+				 * Node found.
+				 */
+				if (cur.contains(fx, fy)) {
 					/*
-					 * Root may be inconsistent here. Roll back through parent nodes
+					 * Moved within the same quadrant.
 					 */
-					while (root.parent != null) {
-						root = root.parent;
-					}
+					cur.insertHere(e, fx, fy);
+				} else if (cur.parent == null || !cur.swapMostStatic(e, fx, fy)) {
 					root.localInsert(e, fx, fy);
 				}
 				return true;
-			} else if (hasChildren()) {
-				return children.stream()
-				.anyMatch(c -> c.get().localMove(e, sx, sy, fx, fy));
+			}
+			if (!cur.hasChildren()) {
+				return false;
 			}
 		}
 		return false;
 	}
 	
-	private static final <E> boolean localMove(final FlexibleQuadTree<E> target, final E e, final double sx, final double sy, final double fx, final double fy) {
-		for (FlexibleQuadTree<E> cur = target; cur.contains(sx, sy);) {
-			if (cur.elements.remove(new QuadTreeEntry<E>(e, sx, sy))) {
-				if (cur.contains(fx, fy)) {
-					cur.insertHere(e, fx, fy);
-				} else if (cur.parent == null || !cur.swapMostStatic(e, fx, fy)) {
-					/*
-					 * Root may be inconsistent here. Roll back through parent nodes
-					 */
-					while (cur.root.parent != null) {
-						cur.root = cur.root.parent;
-					}
-					cur.root.localInsert(e, fx, fy);
-					
-				}
-				return true;
+	private FlexibleQuadTree<E> selectChild(final double x, final double y) {
+		assert hasChildren();
+		if (x < centerX()) {
+			if (y < centerY()) {
+				return getChild(Child.BL);
 			}
-			if (cur.hasChildren()) {
-				if (sx < cur.centerX()) {
-					// VEDI ANGOLO, usa getChild()
-				}
+			return getChild(Child.TL);
+		} else {
+			if (y < centerY()) {
+				return getChild(Child.BR);
 			}
+			return getChild(Child.TR);
 		}
-		return false;
 	}
 	
 	private boolean swapMostStatic(final E e, final double fx, final double fy) {
@@ -512,11 +491,15 @@ public final class FlexibleQuadTree<E> implements Serializable {
 	}
 
 	/**
-	 * @return a list of the objects in the range
+	 * @param fromx start x
+	 * @param fromy start y
+	 * @param tox end x
+	 * @param toy end y
+	 * @return a list of objects in range
 	 */
 	public List<E> query(final double fromx, final double fromy, final double tox, final double toy) {
 		final List<E> result = new ArrayList<>();
-		query(fromx, fromy, tox, toy, Collections.synchronizedList(result));
+		root.query(fromx, fromy, tox, toy, Collections.synchronizedList(result));
 		return result;
 	}
 	
