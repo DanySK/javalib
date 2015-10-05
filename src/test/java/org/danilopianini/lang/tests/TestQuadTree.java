@@ -61,6 +61,11 @@ public class TestQuadTree {
 		assertEquals(SUB_INS - 1, qt.query(0, 0, -Double.MAX_VALUE, Double.MAX_VALUE).size());
 		assertEquals(SUB_INS - 1, qt.query(0, 0, Double.MAX_VALUE, -Double.MAX_VALUE).size());
 		assertEquals(SUB_INS - 1, qt.query(0, 0, -Double.MAX_VALUE, -Double.MAX_VALUE).size());
+		final double halfWay = Math.nextDown(0.5);
+		assertEquals(SUB_INS / 2, qt.query(halfWay, halfWay, Double.MAX_VALUE, Double.MAX_VALUE).size());
+		assertEquals(SUB_INS / 2, qt.query(-halfWay, halfWay, -Double.MAX_VALUE, Double.MAX_VALUE).size());
+		assertEquals(SUB_INS / 2, qt.query(halfWay, -halfWay, Double.MAX_VALUE, -Double.MAX_VALUE).size());
+		assertEquals(SUB_INS / 2, qt.query(-halfWay, -halfWay, -Double.MAX_VALUE, -Double.MAX_VALUE).size());
 		IntStream.range(0, SUB_INS).forEach(v -> {
 			final double val = v / (double) SUB_INS;
 			assertTrue("Test failed for " + v + ".", qt.move(v, val, val, val / 2, val / 2));
