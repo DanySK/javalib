@@ -306,7 +306,7 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 	}
 	
 	/**
-	 * Same of {@link #insert(Object, double...), but with explicit parameters.
+	 * Same of {@link #insert(Object, double...)}, but with explicit parameters.
 	 * 
 	 * @param e
 	 *            element
