@@ -142,7 +142,13 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 		}
 	}
 	
-	private static <E> boolean moveFromNode(final FlexibleQuadTree<E> root, final E e, final double sx, final double sy, final double fx, final double fy) {
+	private static <E> boolean moveFromNode(
+			final FlexibleQuadTree<E> root,
+			final E e,
+			final double sx,
+			final double sy,
+			final double fx,
+			final double fy) {
 		for (FlexibleQuadTree<E> cur = root; cur.contains(sx, sy); cur = cur.selectChild(sx, sy)) {
 			if (cur.elements.remove(new QuadTreeEntry<E>(e, sx, sy))) {
 				/*
@@ -459,7 +465,12 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 		return result;
 	}
 	
-	private void query(final double sx, final double sy, final double fx, final double fy, final List<E> results) {
+	private void query(// NOPMD: False positive
+			final double sx,
+			final double sy,
+			final double fx,
+			final double fy,
+			final List<E> results) {
 		if (bounds.intersects(sx, sy, fx, fy)) {
 			for (final QuadTreeEntry<E> entry : elements) {
 				if (entry.isIn(sx, sy, fx, fy)) {
