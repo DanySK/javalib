@@ -296,8 +296,20 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 	@Override
 	public void insert(final E e, final double... pos) {
 		assert pos.length == 2;
-		final double x = pos[0];
-		final double y = pos[1];
+		insert(e, pos[0], pos[1]);
+	}
+	
+	/**
+	 * Same of {@link #insert(Object, double...), but with explicit parameters.
+	 * 
+	 * @param e
+	 *            element
+	 * @param x
+	 *            X
+	 * @param y
+	 *            Y
+	 */
+	public void insert(final E e, final double x, final double y) {
 		/*
 		 * I must insert starting from the root. If the root does not contain
 		 * the coordinates, then the tree should be expanded upwards
@@ -421,11 +433,28 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 	@Override
 	public List<E> query(final double... space) {
 		assert space.length == 4;
+		return query(space[0], space[1], space[2], space[3]);
+	}
+	
+	/**
+	 * Same of {@link #query(double...), but with explicit parameters.
+	 * 
+	 * @param x1
+	 *            Rectangle X coordinate of the first point
+	 * @param y1
+	 *            Rectangle Y coordinate of the first point
+	 * @param x2
+	 *            Rectangle X coordinate of the second point
+	 * @param y2
+	 *            Rectangle Y coordinate of the second point
+	 * @return {@link List} of Objects in range.
+	 */
+	public List<E> query(final double x1, final double y1, final double x2, final double y2) {
 		final List<E> result = new ArrayList<>();
-		final double sx = Math.min(space[0], space[2]);
-		final double sy = Math.min(space[1], space[3]);
-		final double fx = Math.max(space[0], space[2]);
-		final double fy = Math.max(space[1], space[3]);
+		final double sx = Math.min(x1, x2);
+		final double sy = Math.min(y1, y2);
+		final double fx = Math.max(x1, x2);
+		final double fy = Math.max(y1, y2);
 		root.query(sx, sy, fx, fy, Collections.synchronizedList(result));
 		return result;
 	}
@@ -448,7 +477,22 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 	@Override
 	public boolean remove(final E e, final double... pos) {
 		assert pos.length == 2;
-		return root.removeHere(e, pos[0], pos[1]);
+		return remove(e, pos[0], pos[1]);
+	}
+
+	/**
+	 * Same of {@link #remove(Object, double...)} with explicit parameters.
+	 * 
+	 * @param e
+	 *            Element to remove
+	 * @param x
+	 *            X position of the element
+	 * @param y
+	 *            Y position of the element
+	 * @return true if the element has been found and removed
+	 */
+	public boolean remove(final E e, final double x, final double y) {
+		return root.removeHere(e, x, y);
 	}
 
 	private boolean removeHere(final E e, final double x, final double y) {

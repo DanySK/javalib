@@ -10,60 +10,54 @@ import java.util.List;
 public interface SpatialIndex<E> extends Serializable {
 	
 	/**
-	 * Inserts an element in the {@link FlexibleQuadTree}. If the element is
-	 * outside the space managed by this quadtree, a new quadtree root will be
-	 * created and returned. If not enough space is available in this node, new
-	 * children will get created. Remember to ALWAYS operate on the returned
-	 * object.
+	 * Inserts an element in the {@link SpatialIndex}.
 	 * 
-	 * @param e
+	 * @param element
 	 *            The element to add
-	 * @param x
-	 *            the x position of the element
-	 * @param y
-	 *            the y position of the element
+	 * @param position
+	 *            the coordinates where the element should be added
 	 */
 	void insert(E element, double... position);
 
 	/**
-	 * Deletes an element from the QuadTree.
+	 * Deletes an element from the {@link SpatialIndex}.
 	 * 
-	 * @param e
-	 *            The element to delete
-	 * @param x
-	 *            the x position of the element
-	 * @param y
-	 *            the y position of the element
+	 * @param element
+	 *            The element to add
+	 * @param position
+	 *            the coordinates where the element should be added
 	 * @return true if the element is found and removed
 	 */
 	boolean remove(E element, double... position);
 	
 	/**
-	 * If an element is moved, updates the QuadTree accordingly.
+	 * If an element is moved, updates the {@link SpatialIndex} accordingly.
 	 * 
-	 * @param e
-	 *            the element
-	 * @param sx
-	 *            the start x
-	 * @param sy
-	 *            the start y
-	 * @param fx
-	 *            the final x
-	 * @param fy
-	 *            the final y
-	 * @return true if the element is found and no error occurred
+	 * @param element
+	 *            The element to add
+	 * @param start
+	 *            the coordinates where the element is currently located
+	 * @param end
+	 *            the coordinates where the element is should be moved
+	 * @return true if the element is found and moved
 	 */
 	boolean move(E element, double[] start, double[] end);
 	
 	/**
-	 * @param fromx start x
-	 * @param fromy start y
-	 * @param tox end x
-	 * @param toy end y
-	 * @return a list of objects in range
+	 * Queries the {@link SpatialIndex}, searching for elements in a
+	 * parallelotope. "Parallelotope" is a fancy word for
+	 * "N-dimensional rectangle". A 2-parallelotope is in fact a rectangle, a
+	 * 3-parallelotope is a parallelepiped, and so on.
+	 * 
+	 * @param parallelotope
+	 *            the space where to search for elements
+	 * @return the list of elements in this area of the {@link SpatialIndex}.
 	 */
 	List<E> query(double... parallelotope);
 	
+	/**
+	 * @return the number of dimension of space for this {@link SpatialIndex}.
+	 */
 	int getDimensions();
 	
 }
