@@ -592,10 +592,6 @@
             <ruleset>JavaBeans</ruleset>
         </rule>
         <rule>
-            <name>JUnitAssertionsShouldIncludeMessage</name>
-            <ruleset>JUnit</ruleset>
-        </rule>
-        <rule>
             <name>JUnitSpelling</name>
             <ruleset>JUnit</ruleset>
         </rule>
