@@ -443,7 +443,7 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 	}
 	
 	/**
-	 * Same of {@link #query(double...), but with explicit parameters.
+	 * Same of {@link #query(double...)}, but with explicit parameters.
 	 * 
 	 * @param x1
 	 *            Rectangle X coordinate of the first point
