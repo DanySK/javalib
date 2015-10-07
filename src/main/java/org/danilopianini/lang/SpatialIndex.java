@@ -53,7 +53,7 @@ public interface SpatialIndex<E> extends Serializable {
 	 *            the space where to search for elements
 	 * @return the list of elements in this area of the {@link SpatialIndex}.
 	 */
-	List<E> query(double... parallelotope);
+	List<E> query(double[]... parallelotope);
 	
 	/**
 	 * @return the number of dimension of space for this {@link SpatialIndex}.

@@ -437,9 +437,9 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 	}
 	
 	@Override
-	public List<E> query(final double... space) {
+	public List<E> query(final double[]... space) {
 		assert space.length == 4;
-		return query(space[0], space[1], space[2], space[3]);
+		return query(space[0][0], space[0][1], space[1][0], space[1][1]);
 	}
 	
 	/**
