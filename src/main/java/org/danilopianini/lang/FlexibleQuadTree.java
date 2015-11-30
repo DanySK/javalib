@@ -153,7 +153,15 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
                      * Moved within the same quadrant.
                      */
                     cur.insertNode(e, fx, fy);
-                } else if (cur.parent == null || !cur.swapMostStatic(e, fx, fy)) {
+                } else if (cur.parent == null
+                        || !cur.parent.contains(fx, fy)
+                        || !cur.swapMostStatic(e, fx, fy)) {
+                    /*
+                     * In case:
+                     *  - we are the root
+                     *  - we moved outside the parent's area
+                     *  - the swapping operation failed
+                     */
                     root.insertHere(e, fx, fy);
                 }
                 return true;
@@ -537,6 +545,7 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
                 /*
                  * There is a swappable node
                  */
+                iterator.remove();
                 elements.push(target);
                 parent.insertNode(e, fx, fy);
                 return true;

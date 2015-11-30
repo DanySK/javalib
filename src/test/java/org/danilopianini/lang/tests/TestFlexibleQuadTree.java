@@ -1,8 +1,8 @@
 package org.danilopianini.lang.tests;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Random;
@@ -19,6 +19,7 @@ public class TestFlexibleQuadTree {
 
     private static final int INSERTIONS = 10000;
     private static final int SUB_INS = INSERTIONS / 4;
+    private static final Object TOKEN = "";
 
     /**
      * 
@@ -26,20 +27,48 @@ public class TestFlexibleQuadTree {
     @Test
     public void testRandom() {
         final Random rnd = new Random(0);
-        final List<double[]> testCase = IntStream.range(0, INSERTIONS)
-        .mapToObj(i -> new double[]{
-                rnd.nextLong() + rnd.nextDouble(),
-                rnd.nextLong() + rnd.nextDouble()
-        })
-        .collect(Collectors.toList());
+        final List<double[]> startPositions = makeRandomTest(rnd);
         final FlexibleQuadTree<Object> qt = new FlexibleQuadTree<>();
-        testCase.stream().forEach(o -> {
-            qt.insert(o, o[0], o[1]);
-        });
+        /*
+         * Test that everything got inserted
+         */
+        startPositions.stream().forEach(o -> qt.insert(TOKEN, o[0], o[1]));
         assertEquals(INSERTIONS, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
-        testCase.stream().forEach(o -> assertTrue(qt.remove(o, o[0], o[1])));
+        /*
+         * Move everything and test that it got moved
+         */
+        final List<double[]> moveTo = makeRandomTest(rnd);
+        testMove(qt, startPositions, moveTo);
+        /*
+         * Move again
+         */
+        final List<double[]> moveToAgain = makeRandomTest(rnd);
+        testMove(qt, moveTo, moveToAgain);
+        /*
+         * Remove everything
+         */
+        moveToAgain.stream().forEach(o -> assertTrue(qt.remove(TOKEN, o[0], o[1])));
         assertEquals(0, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
-        testCase.stream().forEach(o -> assertFalse(qt.remove(o, o[0], o[1])));
+        moveToAgain.stream().forEach(o -> assertFalse(qt.remove(o, o[0], o[1])));
+    }
+
+    private static void testMove(
+            final FlexibleQuadTree<Object> qt,
+            final List<double[]> from,
+            final List<double[]> to) {
+        range().forEach(i -> assertTrue(qt.move(TOKEN, from.get(i), to.get(i))));
+        assertEquals(INSERTIONS, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
+        from.stream().forEach(o -> assertFalse(qt.remove(TOKEN, o[0], o[1])));
+    }
+
+    private static IntStream range() {
+        return IntStream.range(0, INSERTIONS);
+    }
+
+    private static List<double[]> makeRandomTest(final Random rnd) {
+        return range()
+                .mapToObj(i -> new double[] { rnd.nextLong() + rnd.nextDouble(), rnd.nextLong() + rnd.nextDouble() })
+                .collect(Collectors.toList());
     }
 
     /**
