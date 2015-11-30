@@ -54,7 +54,7 @@ public class TestPrimitiveUtils {
         assertEquals(1.0, castIfNeeded(Double.class, 1).get());
         assertEquals(1L, castIfNeeded(Long.class, 1).get());
         assertNotEquals(1L, castIfNeeded(Integer.class, 1L).get());
-    
+
         /*
          * Primitives
          */
