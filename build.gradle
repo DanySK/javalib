@@ -7,6 +7,15 @@ apply plugin: 'project-report'
 apply plugin: 'maven'
 apply plugin: 'build-dashboard'
 apply plugin: 'signing'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.danilopianini:smartrrr:0.0.0'
+    }
+}
+apply plugin: 'org.danilopianini.smartrrr'
 
 task wrapper(type: Wrapper) {
     gradleVersion = gradleVersionToUse
@@ -22,12 +31,6 @@ jar {
 
 repositories {
     mavenCentral()
-}
-
-configurations.all {
-  	resolutionStrategy {
-	    failOnVersionConflict()
-    }
 }
 
 configurations {
