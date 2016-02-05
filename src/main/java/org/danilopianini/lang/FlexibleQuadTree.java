@@ -139,8 +139,9 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
         }
     }
 
-    private static <E> boolean moveFromNode(
-            final FlexibleQuadTree<E> root, final E e,
+    private boolean moveFromNode(
+            final FlexibleQuadTree<E> root,
+            final E e,
             final double sx, final double sy,
             final double fx, final double fy) {
         for (FlexibleQuadTree<E> cur = root; cur.contains(sx, sy); cur = cur.selectChild(sx, sy)) {
@@ -162,7 +163,7 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
                      *  - we moved outside the parent's area
                      *  - the swapping operation failed
                      */
-                    root.insertHere(e, fx, fy);
+                    insert(e, fx, fy);
                 }
                 return true;
             }
