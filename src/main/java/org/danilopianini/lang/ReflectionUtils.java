@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.IntStream;
+import java8.util.Optional;
+import java8.util.stream.IntStreams;
+import java8.util.stream.StreamSupport;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -105,7 +106,7 @@ public final class ReflectionUtils {
         /*
          * Find best
          */
-        final Optional<T> best = lm.stream()
+        final Optional<T> best = StreamSupport.stream(lm)
                 .max((pm1, pm2) -> pm1.getFirst().compareTo(pm2.getFirst()))
                 .map(Pair::getSecond);
         if (best.isPresent()) {
@@ -137,7 +138,7 @@ public final class ReflectionUtils {
              * Failure: maybe some cast was required?
              */
             final Class<?>[] params = method.getParameterTypes();
-            final Object[] actualArgs = IntStream.range(0, args.length).parallel().mapToObj(i -> {
+            final Object[] actualArgs = IntStreams.range(0, args.length).parallel().mapToObj(i -> {
                 final Class<?> expected = params[i];
                 final Object actual = args[i];
                 if (!expected.isAssignableFrom(actual.getClass()) && PrimitiveUtils.classIsNumber(expected)) {

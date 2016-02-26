@@ -5,8 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
+import java8.util.Optional;
+import java8.util.function.Function;
+import java8.util.stream.StreamSupport;
 
 import com.google.common.collect.Lists;
 
@@ -118,7 +119,7 @@ public final class PrimitiveUtils {
      *         Double.class if it is no wrapper
      */
     public static Class<? extends Number> toPrimitiveWrapper(final Number n) {
-        return WRAPPER_NUMBER_LIST.stream()
+        return StreamSupport.stream(WRAPPER_NUMBER_LIST)
             .filter(c -> c.isInstance(n))
             .findFirst()
             .orElse(Double.class);

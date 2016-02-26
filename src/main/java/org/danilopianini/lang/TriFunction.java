@@ -8,7 +8,7 @@
  */
 package org.danilopianini.lang;
 
-import java.util.function.Function;
+import java8.util.function.Function;
 
  /**
  * Represents a function that accepts three arguments and produces a result.

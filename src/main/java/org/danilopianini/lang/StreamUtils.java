@@ -1,7 +1,8 @@
 package org.danilopianini.lang;
 
-import java.util.function.Function;
-import java.util.stream.Stream;
+import java8.util.function.Function;
+import java8.util.stream.RefStreams;
+import java8.util.stream.Stream;
 
 /**
  * Complementary utilities for the Java 8 Stream library.
@@ -25,7 +26,7 @@ public final class StreamUtils {
     public static <E> Stream<E> flatten(
             final E target,
             final Function<? super E, ? extends Stream<? extends E>> extractor) {
-        return Stream.concat(Stream.of(target), extractor.apply(target).flatMap(el -> flatten(el, extractor)));
+        return RefStreams.concat(RefStreams.of(target), extractor.apply(target).flatMap(el -> flatten(el, extractor)));
     }
 
 }

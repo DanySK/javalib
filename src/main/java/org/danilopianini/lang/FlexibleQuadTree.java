@@ -16,13 +16,15 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 
+import java8.util.stream.StreamSupport;
+
 /**
  * 
  * @param <E>
  */
 public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 
-    private static final long serialVersionUID = -8765593946059102012L;
+    private static final long serialVersionUID = 0L;
     /**
      * Default maximum number of entries per node.
      */
@@ -284,7 +286,7 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
 
     private boolean hasChildren() {
         if (!childrenCreated) {
-            childrenCreated = children.stream().allMatch(Optional::isPresent);
+            childrenCreated = StreamSupport.stream(children).allMatch(Optional::isPresent);
         }
         return childrenCreated;
     }
@@ -471,7 +473,7 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
                 }
             }
             if (hasChildren()) {
-                children.parallelStream().map(Optional::get).forEach(c -> c.query(sx, sy, fx, fy, results));
+                StreamSupport.parallelStream(children).map(Optional::get).forEach(c -> c.query(sx, sy, fx, fy, results));
             }
         }
     }
@@ -505,8 +507,12 @@ public final class FlexibleQuadTree<E> implements SpatialIndex<E> {
     }
 
     private boolean removeInChildren(final E e, final double x, final double y) {
-        return children.parallelStream().filter(Optional::isPresent).map(Optional::get)
-                .filter(c -> c.removeHere(e, x, y)).findAny().isPresent();
+        return StreamSupport.parallelStream(children)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(c -> c.removeHere(e, x, y))
+                .findAny()
+                .isPresent();
     }
 
     private FlexibleQuadTree<E> selectChild(final double x, final double y) {
