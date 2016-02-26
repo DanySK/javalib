@@ -12,10 +12,18 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.danilopianini:smartrrr:0.0.0'
+        classpath 'org.danilopianini:smartrrr:0.0.1'
+        classpath 'me.tatarka:gradle-retrolambda:+'
     }
 }
 apply plugin: 'org.danilopianini.smartrrr'
+apply plugin: 'me.tatarka.retrolambda'
+
+retrolambda {
+  javaVersion JavaVersion.VERSION_1_7
+  defaultMethods true
+  incremental true
+}
 
 task wrapper(type: Wrapper) {
     gradleVersion = gradleVersionToUse
@@ -44,6 +52,7 @@ dependencies {
     compile "com.google.guava:guava:$guavaVersion"
     compile "org.danilopianini:javalib-java7:$javalib7Version"
     compile "org.apache.commons:commons-math3:$math3Version"
+    compile "net.sourceforge.streamsupport:streamsupport:$streamsupportVersion"
     
     testCompile "junit:junit:$junitVersion"
     

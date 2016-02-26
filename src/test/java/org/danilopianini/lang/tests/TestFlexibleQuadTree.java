@@ -6,12 +6,17 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
+import org.apache.commons.math3.util.FastMath;
 import org.danilopianini.lang.FlexibleQuadTree;
 import org.danilopianini.lang.SpatialIndex;
 import org.junit.Test;
+
+import java8.util.stream.Collectors;
+import java8.util.stream.IntStream;
+import java8.util.stream.IntStreams;
+
+import static java8.util.stream.StreamSupport.stream;
 
 /**
  */
@@ -32,7 +37,7 @@ public class TestFlexibleQuadTree {
         /*
          * Test that everything got inserted
          */
-        startPositions.stream().forEach(o -> qt.insert(TOKEN, o[0], o[1]));
+        stream(startPositions).forEach(o -> qt.insert(TOKEN, o[0], o[1]));
         assertEquals(INSERTIONS, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
         /*
          * Move everything and test that it got moved
@@ -47,9 +52,9 @@ public class TestFlexibleQuadTree {
         /*
          * Remove everything
          */
-        moveToAgain.stream().forEach(o -> assertTrue(qt.remove(TOKEN, o[0], o[1])));
+        stream(moveToAgain).forEach(o -> assertTrue(qt.remove(TOKEN, o[0], o[1])));
         assertEquals(0, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
-        moveToAgain.stream().forEach(o -> assertFalse(qt.remove(o, o[0], o[1])));
+        stream(moveToAgain).forEach(o -> assertFalse(qt.remove(o, o[0], o[1])));
     }
 
     private static void testMove(
@@ -58,11 +63,11 @@ public class TestFlexibleQuadTree {
             final List<double[]> to) {
         range().forEach(i -> assertTrue(qt.move(TOKEN, from.get(i), to.get(i))));
         assertEquals(INSERTIONS, qt.query(-Double.MAX_VALUE, -Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).size());
-        from.stream().forEach(o -> assertFalse(qt.remove(TOKEN, o[0], o[1])));
+        stream(from).forEach(o -> assertFalse(qt.remove(TOKEN, o[0], o[1])));
     }
 
     private static IntStream range() {
-        return IntStream.range(0, INSERTIONS);
+        return IntStreams.range(0, INSERTIONS);
     }
 
     private static List<double[]> makeRandomTest(final Random rnd) {
@@ -77,7 +82,7 @@ public class TestFlexibleQuadTree {
     @Test
     public void testSubdivide() {
         final SpatialIndex<Object> qt = new FlexibleQuadTree<>();
-        IntStream.range(0, SUB_INS).forEach(v -> {
+        IntStreams.range(0, SUB_INS).forEach(v -> {
             final double val = v / (double) SUB_INS;
             qt.insert(v, val, val);
             qt.insert(v, -val, val);
@@ -94,7 +99,7 @@ public class TestFlexibleQuadTree {
         assertEquals(SUB_INS - 1, qt.query(zz, minmax).size());
         assertEquals(SUB_INS - 1, qt.query(zz, maxmin).size());
         assertEquals(SUB_INS - 1, qt.query(zz, minmin).size());
-        final double halfWay = Math.nextDown(0.5);
+        final double halfWay = FastMath.nextDown(0.5);
         final double[] hminmin = new double[]{-halfWay, -halfWay};
         final double[] hmaxmax = new double[]{halfWay, halfWay};
         final double[] hminmax = new double[]{-halfWay, halfWay};
@@ -103,7 +108,7 @@ public class TestFlexibleQuadTree {
         assertEquals(SUB_INS / 2, qt.query(hminmax, minmax).size());
         assertEquals(SUB_INS / 2, qt.query(hmaxmin, maxmin).size());
         assertEquals(SUB_INS / 2, qt.query(hminmin, minmin).size());
-        IntStream.range(0, SUB_INS).forEach(v -> {
+        IntStreams.range(0, SUB_INS).forEach(v -> {
             final double val = v / (double) SUB_INS;
             assertTrue("Test failed for " + v + ".", qt.move(v, new double[]{val, val}, new double[]{val / 2, val / 2}));
             assertTrue(qt.move(v, new double[]{-val, val}, new double[]{-val / 2, val / 2}));
@@ -111,7 +116,7 @@ public class TestFlexibleQuadTree {
             assertTrue(qt.move(v, new double[]{-val, -val}, new double[]{-val / 2, -val / 2}));
         });
         assertEquals(4 * SUB_INS, qt.query(minmin, maxmax).size());
-        IntStream.range(0, SUB_INS).forEach(v -> {
+        IntStreams.range(0, SUB_INS).forEach(v -> {
             final double val = v / (double) SUB_INS / 2;
             assertTrue(qt.remove(v, val, val));
             assertTrue(qt.remove(v, -val, val));
@@ -119,7 +124,7 @@ public class TestFlexibleQuadTree {
             assertTrue(qt.remove(v, -val, -val));
         });
         assertEquals(0, qt.query(minmin, maxmax).size());
-        IntStream.range(0, SUB_INS).forEach(v -> {
+        IntStreams.range(0, SUB_INS).forEach(v -> {
             final double val = v / (double) SUB_INS / 2;
             assertFalse(qt.remove(v, val, val));
             assertFalse(qt.remove(v, -val, val));
